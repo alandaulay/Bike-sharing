@@ -5,7 +5,7 @@ import seaborn as sns
 
 st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
-st.title("🚲 Bike Sharing Dashboard")
+st.title(" Bike Sharing Dashboard")
 
 # Load data
 df = pd.read_csv("main_data.csv")
