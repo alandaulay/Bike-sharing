@@ -3,20 +3,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
+# ======================
+# CONFIG
+# ======================
+st.set_page_config(
+    page_title="Bike Sharing Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-st.title(" Bike Sharing Dashboard")
+sns.set_style("whitegrid")
 
-# Load data
-df = pd.read_csv("main_data.csv")
-
-# Convert datetime
+# ======================
+# LOAD DATA
+# ======================
+df = pd.read_csv("dashboard/main_data.csv")
 df['dteday'] = pd.to_datetime(df['dteday'])
 
 # ======================
-# SIDEBAR FILTER
+# TITLE
 # ======================
-st.sidebar.header("Filter Data")
+st.title("🚲 Bike Sharing Dashboard")
+st.markdown("Analisis penggunaan sepeda berdasarkan waktu, musim, dan kondisi cuaca.")
+
+# ======================
+# SIDEBAR
+# ======================
+st.sidebar.header("🔎 Filter Data")
 
 season = st.sidebar.multiselect(
     "Pilih Musim",
@@ -27,38 +40,61 @@ season = st.sidebar.multiselect(
 df_filtered = df[df['season'].isin(season)]
 
 # ======================
-# METRIC
+# METRICS
 # ======================
-col1, col2 = st.columns(2)
+st.subheader("📊 Ringkasan Data")
 
-col1.metric("Total Rental", int(df_filtered['cnt'].sum()))
-col2.metric("Rata-rata Rental", int(df_filtered['cnt'].mean()))
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Total Rental", f"{df_filtered['cnt'].sum():,}")
+col2.metric("Rata-rata Rental", f"{df_filtered['cnt'].mean():.0f}")
+col3.metric("Max Rental", f"{df_filtered['cnt'].max():,}")
 
 # ======================
 # TIME SERIES
 # ======================
-st.subheader(" Tren Penyewaan Sepeda")
+st.subheader("📈 Tren Penyewaan Sepeda")
 
 st.line_chart(df_filtered.set_index('dteday')['cnt'])
+
+st.caption("📌 Terlihat pola peningkatan pada waktu tertentu yang menunjukkan aktivitas harian pengguna.")
 
 # ======================
 # SEASON ANALYSIS
 # ======================
-st.subheader(" Penyewaan Berdasarkan Musim")
+st.subheader("🌤️ Penyewaan Berdasarkan Musim")
 
-fig, ax = plt.subplots()
-sns.barplot(x='season', y='cnt', data=df_filtered, ax=ax)
-ax.set_title("Rata-rata Penyewaan per Musim")
+fig, ax = plt.subplots(figsize=(8,5))
+sns.barplot(x='season', y='cnt', data=df_filtered, palette="Blues", ax=ax)
+
+ax.set_title("Rata-rata Penyewaan per Musim", fontsize=12)
+ax.set_xlabel("Season (1=Spring, 2=Summer, 3=Fall, 4=Winter)")
+ax.set_ylabel("Jumlah Penyewaan")
+
 st.pyplot(fig)
+
+st.caption("📌 Musim dingin memiliki jumlah penyewaan paling rendah dibanding musim lainnya.")
 
 # ======================
 # WEATHER ANALYSIS
 # ======================
-st.subheader(" Pengaruh Cuaca")
+st.subheader("🌦️ Pengaruh Cuaca")
 
-weather = df_filtered.groupby('weathersit')['cnt'].mean()
+weather = df_filtered.groupby('weathersit')['cnt'].mean().reset_index()
 
-fig2, ax2 = plt.subplots()
-weather.plot(kind='bar', ax=ax2)
-ax2.set_title("Rata-rata Penyewaan berdasarkan Cuaca")
+fig2, ax2 = plt.subplots(figsize=(8,5))
+sns.barplot(x='weathersit', y='cnt', data=weather, palette="Reds", ax=ax2)
+
+ax2.set_title("Rata-rata Penyewaan Berdasarkan Cuaca", fontsize=12)
+ax2.set_xlabel("Weather Situation")
+ax2.set_ylabel("Jumlah Penyewaan")
+
 st.pyplot(fig2)
+
+st.caption("📌 Kondisi cuaca buruk secara signifikan menurunkan jumlah penyewaan.")
+
+# ======================
+# FOOTER
+# ======================
+st.markdown("---")
+st.markdown("📊 Dibuat untuk submission analisis data - Bike Sharing Dataset")
